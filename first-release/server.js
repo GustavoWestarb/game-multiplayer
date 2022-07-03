@@ -11,6 +11,7 @@ const io = new Server(server);
 app.use(express.static('public'));
 
 const game = createGame();
+game.start();
 
 game.subscribe((command) => {
     io.emit(command.type, command);
@@ -32,6 +33,13 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         game.removePlayer({playerId: playerId})
+    });
+
+    socket.on('move-player', (command) => {
+        command.playerId = playerId;
+        command.type = 'move-player';
+
+        game.movePlayer(command);
     });
 });
 

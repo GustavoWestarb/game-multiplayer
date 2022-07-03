@@ -11,6 +11,12 @@ export default function createGame(){
 
     const observers = [];
 
+    function start(){
+        const frequency = 5000;
+
+        setInterval(addFruit, frequency);
+    }
+
     function subscribe(observerFunction) {
         observers.push(observerFunction);
     }
@@ -55,24 +61,36 @@ export default function createGame(){
     }
 
     function addFruit(command){
-        const fruitId = command.fruitId;
-        const fruitX = command.fruitX;
-        const fruitY = command.fruitY;
-
+        const fruitId = command ? command.fruitId : Math.floor(Math.random() * 10000000);
+        const fruitX = command ? command.fruitX : Math.floor(Math.random() * state.screen.width);
+        const fruitY = command ? command.fruitY : Math.floor(Math.random() * state.screen.height);
+        
         state.fruits[fruitId] = {
             x: fruitX,
             y: fruitY
         }
+
+        notifyAll({
+            type: 'add-fruit',
+            fruitId: fruitId,
+            fruitX: fruitX,
+            fruitY: fruitY
+        });
     }
 
     function removeFruit(command){
         const fruitId = command.fruitId;
 
         delete state.fruits[fruitId];
+
+        notifyAll({
+            type: 'remove-fruit',
+            fruitId: fruitId,
+        });
     }
 
     function movePlayer(command){
-        console.log(`game.movePlayer() -> Moving ${command.playerId} with ${command.keyPressed}`)
+        notifyAll(command);
 
         const acceptedMovies = {
             ArrowUp(){
@@ -130,6 +148,7 @@ export default function createGame(){
     }
 
     return{
+        start,
         addPlayer,
         removePlayer,
         addFruit,
